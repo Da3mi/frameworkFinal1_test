@@ -23,9 +23,21 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.odoo.R;
+import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OValues;
+import com.odoo.orm.OdooHelper;
+import com.odoo.support.OUser;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.listview.OListAdapter;
+import com.odoo.util.Base64Helper;
+import com.odoo.util.OBinaryDownloadHelper;
+import com.odoo.util.ODate;
+import com.odoo.util.contactview.OContactView;
+import com.odoo.util.controls.ExpandableHeightGridView;
+import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.drawer.DrawerListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,6 +45,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+
+import odoo.OArguments;
 
 /**
  * Created by daami on 15/08/14.
@@ -85,7 +99,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
 
     private void initControls() {
         mMessageListView = (ListView) mView.findViewById(R.id.lstMessageDetail);
-        mMessageListAdapter = new OEListAdapter(getActivity(),
+        mMessageListAdapter = new OListAdapter(getActivity(),
                 R.layout.fragment_message_detail_listview_items,
                 mMessageObjects) {
             @Override
@@ -104,7 +118,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
     @SuppressLint("CutPasteId")
     private View createListViewRow(View mView, final int position) {
 
-        final OEDataRow row = (OEDataRow) mMessageObjects.get(position);
+        final ODataRow row = (ODataRow) mMessageObjects.get(position);
         TextView txvAuthor, txvEmail, txvTime, txvTo;
         final TextView txvVoteNumber;
         txvAuthor = (TextView) mView.findViewById(R.id.txvMessageAuthor);
@@ -114,7 +128,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         txvVoteNumber = (TextView) mView.findViewById(R.id.txvmessageVotenb);
         String author = row.getString("email_from");
         String email = author;
-        OEDataRow author_id = null;
+        ODataRow author_id = null;
         if (author.equals("false")) {
             author_id = row.getM2ORecord("author_id").browse();
             if (author_id != null) {
@@ -125,13 +139,13 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         txvAuthor.setText(author);
         txvEmail.setText(email);
 
-        txvTime.setText(OEDate.getDate(getActivity(), row.getString("date"),
+        txvTime.setText(ODate.getDate(getActivity(), row.getString("date"),
                 TimeZone.getDefault().getID(), "MMM dd, yyyy,  hh:mm a"));
 
         List<String> partners = new ArrayList<String>();
         String partnersName = "none";
-        for (OEDataRow partner : row.getM2MRecord("partner_ids").browseEach()) {
-            if (partner.getInt("id") == OEUser.current(getActivity())
+        for (ODataRow partner : row.getM2MRecord("partner_ids").browseEach()) {
+            if (partner.getInt("id") == OUser.current(getActivity())
                     .getPartner_id())
                 partners.add("me");
             else
@@ -210,7 +224,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         mView.findViewById(R.id.imgBtnReply).setOnClickListener(this);
 
         // handling contact view
-        OEContactView oe_contactView = (OEContactView) mView
+        OContactView oe_contactView = (OContactView) mView
                 .findViewById(R.id.imgUserPicture);
         int partner_id = 0;
         if (author_id != null)
@@ -227,14 +241,14 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
                     .findViewById(R.id.lstAttachments);
 
             mAttachmentGrid.setExpanded(true);
-            OEListAdapter mAttachmentGridAdapter = new OEListAdapter(
+            OListAdapter mAttachmentGridAdapter = new OListAdapter(
                     getActivity(),
                     R.layout.activity_message_compose_attachment_file_view_item,
                     attachments) {
                 @Override
                 public View getView(final int position, View convertView,
                                     ViewGroup parent) {
-                    final OEDataRow row = (OEDataRow) attachments.get(position);
+                    final ODataRow row = (ODataRow) attachments.get(position);
                     View mView = convertView;
                     if (mView == null)
                         mView = getActivity().getLayoutInflater().inflate(
@@ -329,7 +343,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         @Override
         protected Void doInBackground(Void... params) {
             mMessageObjects.clear();
-            List<OEDataRow> childs = db().select("parent_id = ?",
+            List<ODataRow> childs = db().select("parent_id = ?",
                     new String[] { mMessageId + "" }, null, null, "date DESC");
             mMessageObjects.add(mMessageData);
             mMessageObjects.addAll(childs);
@@ -363,7 +377,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             // when click on attachment download
             int attachment_id = Integer.parseInt(((TextView) v
                     .findViewById(R.id.txvAttachmentId)).getText().toString());
-            OEBinaryDownloadHelper binaryDownload = new OEBinaryDownloadHelper();
+            OBinaryDownloadHelper binaryDownload = new OBinaryDownloadHelper();
             binaryDownload.downloadBinary(attachment_id, db(), getActivity());
         } else {
             // when click on reply message
@@ -391,7 +405,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
 
         boolean mStarred = false;
         boolean isConnection = true;
-        OEHelper mOE = null;
+        OdooHelper mOE = null;
         ProgressDialog mProgressDialog = null;
         int mPosition = -1;
 
@@ -415,10 +429,10 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             }
             JSONArray mIds = new JSONArray();
 
-            OEDataRow row = (OEDataRow) mMessageObjects.get(mPosition);
+            ODataRow row = (ODataRow) mMessageObjects.get(mPosition);
             mIds.put(row.getInt("id"));
 
-            OEArguments args = new OEArguments();
+            OArguments args = new OArguments();
             // Param 1 : message_ids list
             args.add(mIds);
 
@@ -431,7 +445,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             args.add(true);
 
             // Creating Local Database Requirement Values
-            OEValues values = new OEValues();
+            OValues values = new OValues();
             String value = (mStarred) ? "true" : "false";
             values.put("starred", value);
 
@@ -452,7 +466,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         protected void onPostExecute(Boolean result) {
             if (result) {
 
-                OEDataRow row = (OEDataRow) mMessageObjects.get(mPosition);
+                ODataRow row = (ODataRow) mMessageObjects.get(mPosition);
                 row.put("starred", mStarred);
                 mMessageListAdapter.notifiyDataChange(mMessageObjects);
                 DrawerListener drawer = (DrawerListener) getActivity();
@@ -474,7 +488,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         ProgressDialog mProgressDialog = null;
         boolean mToRead = false;
         boolean isConnection = true;
-        OEHelper mOE = null;
+        OdooHelper mOE = null;
 
         public ReadUnreadOperation(boolean toRead) {
             mOE = db().getOEInstance();
@@ -504,7 +518,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             default_model = mMessageData.getString("model");
 
             ids.put(parent_id);
-            for (OEDataRow child : db().select("parent_id = ? ",
+            for (ODataRow child : db().select("parent_id = ? ",
                     new String[] { parent_id + "" })) {
                 ids.put(child.getInt("id"));
             }
@@ -531,12 +545,12 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
     }
 
     /* Method for Make Message as Read,Unread and Archive */
-    private boolean toggleReadUnread(OEHelper oe, JSONArray ids,
+    private boolean toggleReadUnread(OdooHelper oe, JSONArray ids,
                                      String default_model, int res_id, int parent_id, boolean to_read) {
         boolean flag = false;
 
         JSONObject newContext = new JSONObject();
-        OEArguments args = new OEArguments();
+        OArguments args = new OArguments();
         try {
             if (default_model.equals("false")) {
                 newContext.put("default_model", false);
@@ -561,7 +575,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             args.add(newContext);
 
             // Creating Local Database Requirement Values
-            OEValues values = new OEValues();
+            OValues values = new OValues();
             String value = (to_read) ? "true" : "false";
             values.put("starred", false);
             values.put("to_read", value);
@@ -580,7 +594,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
     }
 
     private void handleVoteToggle(int position, TextView view, Object obj) {
-        OEDataRow row = (OEDataRow) obj;
+        ODataRow row = (ODataRow) obj;
         int vote_nb = row.getInt("vote_nb");
         boolean hasVoted = row.getBoolean("has_voted");
         MessageVoteToggle voteToggle = new MessageVoteToggle(row.getInt("id"),
@@ -629,14 +643,14 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            OEHelper oe = db().getOEInstance();
+            OdooHelper oe = db().getOEInstance();
             if (oe == null)
                 return false;
             try {
-                OEArguments args = new OEArguments();
+                OArguments args = new OArguments();
                 args.add(new JSONArray("[" + message_id + "]"));
                 oe.call_kw("vote_toggle", args);
-                OEValues values = new OEValues();
+                OValues values = new OValues();
                 String vote = "false";
                 if (!this.has_voted) {
                     vote = "true";

@@ -325,7 +325,7 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
 
                 OArguments arguments = new OArguments();
                 arguments.add(new JSONArray().put(mGroupId));
-                arguments.add(db().getOdoo().updateContext(new JSONObject()));
+                arguments.add(app.updateContext(new JSONObject()));
                 if (mJoin) {
                     oe.call_kw("action_follow", arguments, null);
                     mToast = "Group joined";

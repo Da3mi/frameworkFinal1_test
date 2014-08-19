@@ -45,7 +45,7 @@ import com.odoo.widgets.WidgetHelper;
 
 public class MessageRemoteViewFactory implements RemoteViewsFactory {
 
-	public static final String TAG = "com.openerp.widgets.message.MessageRemoteViewFactory";
+	public static final String TAG = "com.odoo.widgets.message.MessageRemoteViewFactory";
 
 	Context mContext = null;
 	int mAppWidgetId = -1;

@@ -9,6 +9,19 @@
       <string name="delete">Delete</string>
        <string name="save">Save</string>
 
+    <string name="account_edit_server_port">Port Number (If any)</string>
+    <string name="account_continue_button">Continue</string>
+    <string name="account_login_button">Login</string>
+    <string name="add_Post_button">Post</string>
+   <!-- <string name="str_user_login">User Login</string>
+    <string name="str_user_name">User Name</string>
+    &lt;!&ndash;<string name="str_server_url">Server URL</string>&ndash;&gt;
+    <string name="str_database">Database</string>
+    <string name="str_timezone">TimeZone</string>
+    <string name="str_provide_port_number">Provide your port number with URL if any.</string>
+    <string name="str_secure_connection">Secure Connection</string>-->
+
+
     <string name="title_activity_message_compose">Odoo Message</string>
     <string name="message_inbox_all_read"><b>Good Job!</b> Your inbox is empty.\n \n
 
