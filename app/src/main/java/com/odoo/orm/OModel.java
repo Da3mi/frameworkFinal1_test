@@ -30,6 +30,7 @@ import java.util.List;
 import odoo.ODomain;
 import odoo.OdooVersion;
 
+
 import org.json.JSONObject;
 
 import android.content.ContentValues;
@@ -39,8 +40,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.ViewDebug;
 
 import com.odoo.App;
+import com.odoo.base.ir.IrModel;
 import com.odoo.orm.ORelIds.RelData;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.annotations.Odoo.Functional;
@@ -92,6 +95,7 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 	/** The app. */
 	private App mApp = null;
 
+    odoo.Odoo mOdoo = null;
 	/** The odoo version. */
 	private OdooVersion mOdooVersion = null;
 
@@ -101,8 +105,9 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 	/** The limit. */
 	private Integer mLimit = -1;
 
-
+    OModelHelper modelHelper = null ;
     OdooHelper mOEHelper= null ;
+    List<ODataRow> mRemovedRecords = new ArrayList<ODataRow>();
 	/**
 	 * The Enum Command.
 	 */
@@ -170,8 +175,11 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		super(context);
 		mContext = context;
 		_name = model_name;
+        modelHelper = this ;
+
 		mUser = OUser.current(mContext);
 		mApp = (App) context.getApplicationContext();
+        mOdoo = mApp.getOdoo() ;
 		if (mUser != null) {
 			mOdooVersion = new OdooVersion();
 			mOdooVersion.setVersion_number(mUser.getVersion_number());
@@ -250,6 +258,21 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		}
 	}
 
+    public boolean isInstalledOnServer() {
+        OdooHelper oe = getOEInstance();
+        boolean installed = false;
+        if (oe != null) {
+            installed = this.isModelInstalled(getModelName());
+        } else {
+            IrModel ir = new IrModel(mContext);
+            List<ODataRow> rows = ir.select("model = ?",
+                    new String[] { getModelName() });
+            if (rows.size() > 0) {
+                installed = rows.get(0).getBoolean("is_installed");
+            }
+        }
+        return installed;
+    }
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -557,7 +580,7 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		return null;
 	}
 
-	public Integer selectRowId(Integer server_id) {
+	public Integer selectRowId(int server_id) {
 		List<ODataRow> records = select("id = ? ", new Object[] { server_id });
 		if (records.size() > 0) {
 			return records.get(0).getInt(OColumn.ROW_ID);
@@ -776,7 +799,7 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 	 *            the values
 	 * @return the integer
 	 */
-	public Integer createORReplace(OValues values) {
+	public int createORReplace(OValues values) {
 		List<OValues> vals = new ArrayList<OValues>();
 		vals.add(values);
 		return createORReplace(vals).get(0);
@@ -838,6 +861,15 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		return newId;
 	}
 
+    public List<OColumn> getDatabaseServerColumns() {
+        List<OColumn> cols = new ArrayList<OColumn>();
+        for (OColumn col : modelHelper.getColumns()) {
+            if (col.canSync()) {
+                cols.add(col);
+            }
+        }
+        return cols;
+    }
 	/**
 	 * Update relation columns values for ManyToMany and OneToMany
 	 * 
@@ -951,7 +983,9 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		return newId;
 	}
 
-	/**
+
+
+    /**
 	 * Update.
 	 * 
 	 * @param values
@@ -1090,6 +1124,39 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		vals.put("local_write_date", ODate.getDate());
 		return vals;
 	}
+
+
+    public boolean isModelInstalled(String model) {
+        boolean installed = true;
+        IrModel ir_model = new IrModel(mContext);
+        try {
+            OFieldsHelper fields = new OFieldsHelper(new String[] { "model" });
+            ODomain domain = new ODomain();
+            domain.add("model", "=", model);
+            JSONObject result = mOdoo.search_read(ir_model.getModelName(),
+                    fields.get(), domain.get());
+            if (result.getInt("length") > 0) {
+                installed = true;
+                JSONObject record = result.getJSONArray("records")
+                        .getJSONObject(0);
+                OValues values = new OValues();
+                values.put("id", record.getInt("id"));
+                values.put("model", record.getString("model"));
+                values.put("is_installed", installed);
+                int count = ir_model.count("model = ?", new String[] { model });
+                if (count > 0)
+                    ir_model.update(values, "model = ?", new String[] { model });
+                else
+                    ir_model.create(values);
+            } else {
+                installed = false;
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "OEHelper->isModuleInstalled()");
+            Log.e(TAG, e.getMessage() + ". No connection with OpenERP server");
+        }
+        return installed;
+    }
 
 	/**
 	 * Manage many to many records.
@@ -1423,6 +1490,10 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		}
 	}
 
+
+    public List<ODataRow> getRemovedRecords() {
+        return mRemovedRecords;
+    }
 	/**
 	 * The Class AutoUpdateOnServer.
 	 */
@@ -1447,6 +1518,8 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
  */
 interface OModelHelper {
 
+
+    public boolean isModelInstalled(String model) ;
 
     public OdooHelper getOEInstance();
 	/**

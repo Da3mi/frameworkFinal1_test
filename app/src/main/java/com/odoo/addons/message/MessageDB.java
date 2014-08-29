@@ -5,6 +5,7 @@ import android.content.Context;
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
+import com.odoo.orm.OFieldsHelper;
 import com.odoo.orm.OModel;
 import com.odoo.orm.OValues;
 import com.odoo.orm.types.OInteger;
@@ -42,6 +43,10 @@ public class MessageDB extends OModel {
 
 
 
+
+    OFieldsHelper.ValueWatcher mValueWatcher = new OFieldsHelper.ValueWatcher() {
+
+        @Override
         public OValues getValue(OColumn col, Object value) {
             OValues values = new OValues();
             try {
@@ -60,7 +65,10 @@ public class MessageDB extends OModel {
             return values;
         }
 
-    OColumn author_id = new OColumn("Author",ResPartner.class, OColumn.RelationType.ManyToMany);
+
+    };
+
+    OColumn author_id = new OColumn("Author",ResPartner.class, OColumn.RelationType.ManyToMany,mValueWatcher.toString());
     /*columns.add(new OEColumn("author_id", "author", OEFields
             .manyToOne(new ResPartnerDB(mContext)), mValueWatcher));*/
     OColumn model = new OColumn("Model",OVarchar.class);

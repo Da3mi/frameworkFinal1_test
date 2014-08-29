@@ -21,6 +21,7 @@ import com.odoo.R;
 import com.odoo.addons.message.providers.groups.MailGroupProvider;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OdooHelper;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
@@ -30,8 +31,8 @@ import com.odoo.support.listview.OListAdapter;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.drawer.DrawerItem;
 import com.odoo.util.drawer.DrawerListener;
+import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.OETouchListener;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,12 +43,13 @@ import java.util.List;
 import odoo.OArguments;
 import odoo.Odoo;
 
+
 /**
  * Created by daami on 15/08/14.
  */
-public class MailGroup extends BaseFragment implements OETouchListener.OnPullListener {
+public class MailGroup extends BaseFragment implements OnPullListener {
 
-    public static final String TAG = "com.openerp.addons.message.MailGroup";
+    public static final String TAG = "com.odoo.addons.message.MailGroup";
 
     /**
      * OETouchListener
@@ -179,6 +181,7 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
         List<DrawerItem> menu = new ArrayList<DrawerItem>();
 
         MailGroup group = new MailGroup();
+        Message message = new Message();
         Bundle bundle = new Bundle();
 
 
@@ -186,6 +189,7 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
 
             // Join Group
             group.setArguments(bundle);
+            message.setArguments(bundle);
             menu.add(new DrawerItem(TAG, "Join Group", 0,
                     R.drawable.ic_action_social_group, group));
 
@@ -197,12 +201,19 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
             );
             int index = 0;
             MessageDB messageDB = new MessageDB(context);
+            menu.add(new DrawerItem(TAG, "Physicians", 0,
+                mTagColors[0], message));
+        menu.add(new DrawerItem(TAG, "Managers", 0,
+                mTagColors[2], message));
+        menu.add(new DrawerItem(TAG, "secretary", 0,
+                mTagColors[3], message));
             for (ODataRow row : groups) {
                 if (mTagColors.length - 1 < index)
                     index = 0;
                 ODataRow grp = db.select(row.getInt("res_id"));
+
                 if (grp != null) {
-                    Message message = new Message();
+
                     bundle = new Bundle();
                     bundle.putInt("group_id", grp.getInt("id"));
                     message.setArguments(bundle);
@@ -211,6 +222,8 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
                             "to_read = ? AND model = ? AND res_id = ?",
                             new String[] { "true", db().getModelName(),
                                     row.getString("id") });
+
+
                     menu.add(new DrawerItem(TAG, grp.getString("name"), count,
                             mTagColors[index], message));
                     grp.put("tag_color", Color.parseColor(mTagColors[index]));
@@ -274,8 +287,8 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(syncFinishReceiver,
-                new IntentFilter(SyncFinishReceiver.SYNC_FINISH));
+       /* getActivity().registerReceiver(syncFinishReceiver,
+                new IntentFilter(SyncFinishReceiver.SYNC_FINISH));*/
     }
 
     @Override
@@ -302,6 +315,7 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
         int mGroupId = 0;
         boolean mJoin = false;
         String mToast = "";
+        OSyncHelper sync = null ;
         JSONObject result = new JSONObject();
 
         public JoinUnfollowGroup(int group_id, boolean join) {
@@ -316,27 +330,34 @@ public class MailGroup extends BaseFragment implements OETouchListener.OnPullLis
                     mMailFollowerDB = new MailFollowers(getActivity());
                 int partner_id = OUser.current(getActivity()).getPartner_id();
                 OdooHelper oe = db().getOEInstance();
-               Odoo app = new App().getOdoo();
 
-                if ( app == null) {
+                sync = mMailFollowerDB.getSyncHelper();
+            // Odoo app = new App().getOdoo();
+
+               /* if ( app == null) {
                     mToast = "No Connection";
                     return false;
-                }
+                }*/
 
                 OArguments arguments = new OArguments();
                 arguments.add(new JSONArray().put(mGroupId));
-                arguments.add(app.updateContext(new JSONObject()));
+                arguments.add(oe.Odooo().updateContext(new JSONObject()));
                 if (mJoin) {
-                    oe.call_kw("action_follow", arguments, null);
+                   // sync.callMethod("action_follow",arguments,null);
+                    oe.call_kw("action_follow",arguments,null);
+
                     mToast = "Group joined";
-                    oe.syncWithServer();
+                    sync.syncWithServer();
                 } else {
-                    oe.call_kw("action_unfollow", arguments, null);
+                   // sync.callMethod("action_unfollow",arguments,null);
+                    oe.call_kw("action_unfollow",arguments,null);
+
                     mToast = "Unfollowed from group";
                     mMailFollowerDB.delete(
                             "res_id = ? AND partner_id = ? AND res_model = ? ",
                             new String[] { mGroupId + "", partner_id + "",
                                     db().getModelName() });
+                    sync.syncWithServer();
 
                 }
                 return true;

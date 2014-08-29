@@ -23,15 +23,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.odoo.App;
-import com.odoo.R;
+import com.odoo.*;
 import com.odoo.addons.message.providers.message.MessageProvider;
 import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.ir.Attachment;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OEM2MIds;
 import com.odoo.orm.OFieldsHelper;
 import com.odoo.orm.OM2MRecord.Operation;
 import com.odoo.orm.OM2MRecord;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.orm.OdooHelper;
 import com.odoo.support.OUser;
@@ -110,14 +112,14 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
     List<Object> mTagsPartners = new ArrayList<Object>();
     List<Object> mTagsGroups = new ArrayList<Object>();
     List<Object> mTagsLocalPartners = new ArrayList<Object>();
-    EditText edtSubject = null, edtBody = null;
+    EditText edtSubject = null, edtBody = null, edtEmail = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_compose);
         mContext = this;
-        getActionBar().setIcon(R.drawable.ic_odoo_o);
+        getActionBar().setIcon(R.drawable.icon);
         if (OUser.current(mContext) == null) {
             // No Account
             Toast.makeText(mContext, "No Account Found", Toast.LENGTH_LONG)
@@ -175,6 +177,7 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                             false);
                 }
                 ODataRow row = (ODataRow) mTagsPartners.get(position);
+
                 TextView txvSubject = (TextView) mView
                         .findViewById(R.id.txvSubject);
                 TextView txvSubSubject = (TextView) mView
@@ -254,8 +257,10 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
         mAttachmentGridView.setAdapter(mAttachmentAdapter);
 
         // Edittext
+        edtEmail = (EditText) findViewById(R.id.edtMessageEmail);
         edtSubject = (EditText) findViewById(R.id.edtMessageSubject);
         edtBody = (EditText) findViewById(R.id.edtMessageBody);
+
     }
 
 
@@ -367,9 +372,18 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
     private void initDBs() {
         mPartnerDB = new ResPartner(mContext);
         mMessageDB = new MessageDB(mContext);
+        OValues oValues = new OValues();
+        oValues.put("subject","Helloooooo");
+        oValues.put("body","hello montassar ,happy to see you ");
+        mMessageDB.create(oValues);
         mMailGroupDB = new MailGroupDB(mContext);
+        OValues oValues1 = new OValues();
+        oValues1.put("name","Physicians");
+        oValues1.put("description","Good work");
+        mMailGroupDB.create(oValues1);
+
        // mOE = mPartnerDB.getOEInstance();
-        mOdoo = mApp.getOdoo();
+       // mOdoo = mApp.getOdoo();
         mAttachment = new Attachment(mContext);
         mAttachments.clear();
     }
@@ -482,16 +496,16 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
 
     class SendMessage extends AsyncTask<Void, Void, Void> {
         OdooHelper mOE = null;
+        OSyncHelper sync = null;
         boolean isConnection = true;
         boolean isempty = false ;
         String mToast = "";
         int newMessageId = 0;
 
         public SendMessage() {
-           mOE = mMessageDB.getOEInstance();
+            mOE = mMessageDB.getOEInstance();
+            sync = mMessageDB.getSyncHelper();
 
-            if (mOE == null)
-                isConnection = false;
 
 
         }
@@ -508,7 +522,7 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                     List<Long> lAttachmentIds = mAttachment.newAttachmentIds();
                     for (long id : lAttachmentIds)
                         attachmentIds.add(Integer.parseInt(id + ""));
-                } else {
+                } /*else {
                     for (Object obj : mAttachments) {
                         ODataRow attachment = (ODataRow) obj;
                         attachmentIds.add(attachment.getInt("id"));
@@ -516,7 +530,7 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                     record_name = edtSubject.getText().toString();
                     res_model = "note.note";
                     res_id = mNoteObj.getInt("id");
-                }
+                }*/
                 try {
 
                     ODataRow user = new ResPartner(mContext).select(OUser
@@ -581,22 +595,21 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
 
                         JSONObject kwargs = new JSONObject();
                         kwargs.put("context",
-                                mApp.getOdoo().updateContext(new JSONObject()));
+                                mOE.Odooo().updateContext(new JSONObject()));
 
                         args.add(arguments);
                         String model = "mail.compose.message";
 
                         // Creating compose message
-                        int id = (Integer) mOE.call_kw(model, "create", args,
-                                null, kwargs);
+                        int id = (Integer) sync.callMethod("create",args,null,kwargs);
 
                         // Resetting kwargs
                         args = new OArguments();
                         args.add(new JSONArray().put(id));
-                        args.add(mApp.getOdoo().updateContext(new JSONObject()));
+                        args.add(mOE.Odooo().updateContext(new JSONObject()));
 
                         // Sending mail
-                        mOE.call_kw(model, "send_mail", args, null, null);
+                       sync.callMethod("send_mail", args,null, null);
                         syncMessage();
                     } else {
                         mToast = "Message reply sent.";
@@ -629,12 +642,12 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                                     + partner_ids.toString() + "]"));
                         else
                             kwargs.put("partner_ids", new JSONArray());
-                        newMessageId = (Integer) mOE.call_kw(model, method,
+                        newMessageId = (Integer) sync.callMethod( method,
                                 args, null, kwargs);
                         // Creating local entry
                         OValues values = new OValues();
 
-                        OM2MRecord partnerIds = new OM2MRecord(Operation.ADD,
+                        OEM2MIds partnerIds = new OEM2MIds(OEM2MIds.Operation.ADD,
                                 partner_ids_list);
                         values.put("id", newMessageId);
                         values.put("partner_ids", partnerIds);
@@ -652,7 +665,7 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                         values.put("has_voted", false);
                         values.put("vote_nb", 0);
                         values.put("starred", false);
-                        OM2MRecord attachment_Ids = new OM2MRecord(Operation.ADD,
+                        OEM2MIds attachment_Ids = new OEM2MIds(OEM2MIds.Operation.ADD,
                                 attachmentIds);
                         values.put("attachment_ids", attachment_Ids);
                         newMessageId = (int) mMessageDB.create(values);
@@ -731,12 +744,12 @@ public class MessageComposeActivity extends Activity implements MultiTagsTextVie
                     if (mOE != null) {
                         try {
                             OFieldsHelper fields = new OFieldsHelper(
-                                    mPartnerDB.getColumns());
+                                    mPartnerDB.getDatabaseServerColumns());
                             ODomain domain = new ODomain();
                             domain.add("|");
                             domain.add("name", "=ilike", filter + "%");
                             domain.add("email", "=ilike", filter + "%");
-                            JSONObject result = mApp.getOdoo().search_read(
+                            JSONObject result = mOE.Odooo().search_read(
                                     mPartnerDB.getModelName(), fields.get(),
                                     domain.get());
                             for (int i = 0; i < result.getJSONArray("records")

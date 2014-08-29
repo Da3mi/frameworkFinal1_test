@@ -74,7 +74,7 @@
         <odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            odoo:field_name="category_id"
+            odoo:field_name="comment"
             odoo:with_label="false" >
         </odoo.controls.OField>
     </LinearLayout>

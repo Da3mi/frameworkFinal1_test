@@ -18,7 +18,7 @@ public class ResMedicament extends OModel {
     OColumn category = new OColumn("Category",OVarchar.class);
     OColumn active_component = new OColumn("Active Component",OVarchar.class);
     OColumn indications = new OColumn("Indication", OText.class);
-    OColumn therapeutic_action = new OColumn("Therapeutic effect"); //Therapeutic action
+
 
     public ResMedicament(Context context){ super(context, "res.partner.medicament");
     }

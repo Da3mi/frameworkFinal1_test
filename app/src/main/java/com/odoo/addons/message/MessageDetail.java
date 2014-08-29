@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.odoo.R;
 import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.orm.OdooHelper;
 import com.odoo.support.OUser;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import odoo.OArguments;
+import odoo.Odoo;
 
 /**
  * Created by daami on 15/08/14.
@@ -140,7 +142,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         txvEmail.setText(email);
 
         txvTime.setText(ODate.getDate(getActivity(), row.getString("date"),
-                TimeZone.getDefault().getID(), "MMM dd, yyyy,  hh:mm a"));
+                TimeZone.getDefault().getID()));
 
         List<String> partners = new ArrayList<String>();
         String partnersName = "none";
@@ -406,14 +408,17 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         boolean mStarred = false;
         boolean isConnection = true;
         OdooHelper mOE = null;
+        OSyncHelper sync = null;
         ProgressDialog mProgressDialog = null;
         int mPosition = -1;
 
         public StarredOperation(int position, boolean starred) {
             mStarred = starred;
             mOE = db().getOEInstance();
+            sync = db().getSyncHelper();
+            Odoo odd =  app().createInstance();
             mPosition = position;
-            if (mOE == null)
+            if (odd == null)
                 isConnection = false;
             mProgressDialog = new ProgressDialog(getActivity());
             mProgressDialog.setMessage("Working...");
@@ -449,7 +454,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             String value = (mStarred) ? "true" : "false";
             values.put("starred", value);
 
-            boolean response = (Boolean) mOE.call_kw("set_message_starred",
+            boolean response = (Boolean) sync.callMethod("set_message_starred",
                     args, null);
             response = (!mStarred && !response) ? true : response;
             if (response) {
@@ -489,10 +494,13 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
         boolean mToRead = false;
         boolean isConnection = true;
         OdooHelper mOE = null;
+        OSyncHelper sync = null ;
 
         public ReadUnreadOperation(boolean toRead) {
             mOE = db().getOEInstance();
-            if (mOE == null)
+            sync = db().getSyncHelper();
+            Odoo odd =  app().createInstance();
+            if (odd == null)
                 isConnection = false;
             mToRead = toRead;
             mProgressDialog = new ProgressDialog(getActivity());
@@ -522,7 +530,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
                     new String[] { parent_id + "" })) {
                 ids.put(child.getInt("id"));
             }
-            if (toggleReadUnread(mOE, ids, default_model, res_id, parent_id,
+            if (toggleReadUnread(sync, ids, default_model, res_id, parent_id,
                     mToRead)) {
                 flag = true;
             }
@@ -545,7 +553,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
     }
 
     /* Method for Make Message as Read,Unread and Archive */
-    private boolean toggleReadUnread(OdooHelper oe, JSONArray ids,
+    private boolean toggleReadUnread(OSyncHelper sync, JSONArray ids,
                                      String default_model, int res_id, int parent_id, boolean to_read) {
         boolean flag = false;
 
@@ -579,7 +587,7 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
             String value = (to_read) ? "true" : "false";
             values.put("starred", false);
             values.put("to_read", value);
-            int result = (Integer) oe.call_kw("set_message_read", args, null);
+            int result = (Integer) sync.callMethod("set_message_read", args, null);
             if (result > 0) {
                 for (int i = 0; i < ids.length(); i++) {
                     int id = ids.getInt(i);
@@ -642,14 +650,18 @@ public class MessageDetail extends BaseFragment implements View.OnClickListener 
 
         @Override
         protected Boolean doInBackground(Void... params) {
-
+            OSyncHelper sync = null ;
+            sync = db().getSyncHelper().syncDataLimit(60);
             OdooHelper oe = db().getOEInstance();
-            if (oe == null)
+            Odoo odd =  app().createInstance();
+
+            if (odd == null)
                 return false;
             try {
                 OArguments args = new OArguments();
                 args.add(new JSONArray("[" + message_id + "]"));
-                oe.call_kw("vote_toggle", args);
+                sync.callMethod("vote_toggle",args);
+               // oe.call_kw("vote_toggle", args);
                 OValues values = new OValues();
                 String vote = "false";
                 if (!this.has_voted) {

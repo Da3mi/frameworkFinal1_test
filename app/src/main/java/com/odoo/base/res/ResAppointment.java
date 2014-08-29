@@ -19,13 +19,13 @@ public class ResAppointment extends OModel {
 
     OColumn patient_id = new OColumn("Patient first name", ResPartner.class,
             OColumn.RelationType.ManyToOne).setRelatedColumn("first_name");
-    OColumn Appointment_date = new OColumn("Date", ODateTime.class);
+    OColumn Appointment_date = new OColumn("Appointment Date", ODateTime.class);
     OColumn duration = new OColumn("Duration", OReal.class);
     OColumn doctor = new OColumn("physician", ResPhysician.class,
             OColumn.RelationType.ManyToOne).setRelatedColumn("name");
     OColumn ssn = new OColumn("Securiy social number", OVarchar.class, 100);
     OColumn comments = new OColumn("Comments", OText.class);
-    OColumn appointment_type = new OColumn("Type", OVarchar.class, 50);
+    OColumn appointment_type = new OColumn("Appointment Type", OVarchar.class, 50);
     OColumn urgency = new OColumn("Urgency Level", OVarchar.class, 50);
     // OColumn speciality = new OColumn("Speciality", Specialty.class, OColumn.RelationType.ManyToOne);
     OColumn state = new OColumn("State", OVarchar.class, 50);

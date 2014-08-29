@@ -68,7 +68,7 @@ public class LoginSignup extends BaseFragment implements OnClickListener,
 	private void initControls() {
 		mView.findViewById(R.id.txvAddSelfHosted).setOnClickListener(this);
 		mView.findViewById(R.id.btnLogin).setOnClickListener(this);
-        mView.findViewById(R.id.txvCreateAccount).setOnClickListener(this);
+       // mView.findViewById(R.id.txvCreateAccount).setOnClickListener(this);
 		edtUsername = (EditText) mView.findViewById(R.id.edtUserName);
 		edtUsername.setOnFocusChangeListener(this);
 		edtPassword = (EditText) mView.findViewById(R.id.edtPassword);

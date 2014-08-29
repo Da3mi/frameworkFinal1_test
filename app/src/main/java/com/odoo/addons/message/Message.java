@@ -27,6 +27,7 @@ import android.widget.AdapterView.OnItemLongClickListener ;
 import com.odoo.R;
 import com.odoo.addons.message.providers.message.MessageProvider;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.orm.OdooHelper;
 import com.odoo.receivers.DataSetChangeReceiver;
@@ -70,7 +71,7 @@ public class Message extends BaseFragment implements OnPullListener, OnItemLongC
         OnItemClickListener,SwipeCallbacks, OnScrollListener, OnTouchListener,OList.OnListBottomReachedListener{
 
 
-    public static final String TAG = "com.openerp.addons.message.Message";
+    public static final String TAG = "com.odoo.addons.message.Message";
 
     /**
      * On bottom reached.
@@ -394,7 +395,7 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
       //  txvBody.setText(HTMLHelper.htmlToString(row.getString("body")));
         String date = row.getString("date");
         txvDate.setText(ODate.getDate(getActivity(), date, TimeZone
-                .getDefault().getID(), "MMM dd,  hh:mm a"));
+                .getDefault().getID()));
 
         String from = row.getString("email_from");
         if (from.equals("false")) {
@@ -446,13 +447,14 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
     @Override
     public List<DrawerItem> drawerMenus(Context context) {
         List<DrawerItem> drawerItems = new ArrayList<DrawerItem>();
-        MessageDB db = new MessageDB(context);
+       // MessageDB db = new MessageDB(context);
 
             drawerItems.add(new DrawerItem(TAG, "Messages", true));
             drawerItems
                     .add(new DrawerItem(TAG, "Inbox", count(MType.INBOX,
                             context), R.drawable.ic_action_inbox,
-                            getFragment("inbox")));
+                            getFragment("inbox")
+                    ));
             drawerItems.add(new DrawerItem(TAG, "To: me", count(MType.TOME,
                     context), R.drawable.ic_action_user, getFragment("to-me")));
             drawerItems.add(new DrawerItem(TAG, "To-do", count(MType.TODO,
@@ -771,14 +773,14 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
     private class MarkAsArchive extends AsyncTask<Void, Void, Void> {
 
         ODataRow mRow = null;
-        OdooHelper mOE = null;
+        OSyncHelper mOE = null;
         boolean mToRead = false;
         boolean isConnection = true;
         Context mContext = null;
 
         public MarkAsArchive(ODataRow row) {
             mRow = row;
-            mOE = db().getOEInstance();
+            mOE = db().getSyncHelper();
             if (mOE == null)
                 isConnection = false;
             mToRead = false;
@@ -820,7 +822,7 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
     }
 
     /*Method for Make Message as Read,Unread and Archive */
-    private boolean toggleReadUnread(OdooHelper oe, JSONArray ids,
+    private boolean toggleReadUnread(OSyncHelper oe, JSONArray ids,
                                      String default_model, int res_id, int parent_id, boolean to_read) {
         boolean flag = false;
 
@@ -854,7 +856,7 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
             String value = (to_read) ? "true" : "false";
             values.put("starred", false);
             values.put("to_read", value);
-            int result = (Integer) oe.call_kw("set_message_read", args, null);
+            int result = (Integer) oe.callMethod("set_message_read", args, null);
             if (result > 0) {
                 for (int i = 0; i < ids.length(); i++) {
                     int id = ids.getInt(i);
@@ -876,10 +878,10 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
         ProgressDialog mProgressDialog = null;
         boolean mToRead = false;
         boolean isConnection = true;
-        OdooHelper mOE = null;
+        OSyncHelper mOE = null;
 
         public ReadUnreadOperation(boolean toRead) {
-            mOE = db().getOEInstance();
+            mOE = db().getSyncHelper().syncDataLimit(30);
             if (mOE == null)
                 isConnection = false;
             mToRead = toRead;
@@ -970,11 +972,11 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
         boolean mStarred = false;
         ProgressDialog mProgressDialog = null;
         boolean isConnection = true;
-        OdooHelper mOE = null;
+        OSyncHelper mOE = null;
 
         public StarredOperation(boolean starred) {
             mStarred = starred;
-            mOE = db().getOEInstance();
+            mOE = db().getSyncHelper();
             if (mOE == null)
                 isConnection = false;
             mProgressDialog = new ProgressDialog(getActivity());
@@ -1013,7 +1015,7 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
             String value = (mStarred) ? "true" : "false";
             values.put("starred", value);
 
-            boolean response = (Boolean) mOE.call_kw("set_message_starred",
+            boolean response = (Boolean) mOE.callMethod("set_message_starred",
                     args, null);
             response = (!mStarred && !response) ? true : response;
             if (response) {

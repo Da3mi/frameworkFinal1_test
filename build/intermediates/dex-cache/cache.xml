@@ -2,14 +2,14 @@
 <pre-dex-items>
 
     <item
-        dex="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/pre-dexed/debug/pull_swipe_library-ef2067d6cdf8bc398851146dd4760a7e9db94e19.jar"
-        jar="/home/daami/AndroidstudioProjects/framework_Final/app/libs/pull_swipe_library.jar"
+        dex="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/pre-dexed/debug/odoo-v2-5d958f68945b1844544f955b1cf39babe0c7a409.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/libs/odoo-v2.jar"
         jumboMode="false"
         revision="20.0.0"
-        sha1="dd46fc444f639449b5a7d28b6b8270b0d8821d1b"/>
+        sha1="8ceb7df4048d63ccff9a3586a59474a51a39ec54"/>
     <item
-        dex="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/pre-dexed/debug/internal_impl-20.0.0-745be28902a887b27838dbed16c3d4acb8688a4e.jar"
-        jar="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/libs/internal_impl-20.0.0.jar"
+        dex="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/pre-dexed/debug/internal_impl-20.0.0-acfb206846173d1c58957e291afe9de0e55d585f.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/libs/internal_impl-20.0.0.jar"
         jumboMode="false"
         revision="20.0.0"
         sha1="e40b3078e3fbd353c9f44da8df25a8fc0078209d"/>
@@ -32,17 +32,17 @@
         revision="20.0.0"
         sha1="8694693636ab36910c8100ce527c258ff3ebece0"/>
     <item
-        dex="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/pre-dexed/debug/support-annotations-20.0.0-314138d45b24435903756b7fb67cca3b61e0110c.jar"
-        jar="/home/daami/Desktop/android-studio/sdk/extras/android/m2repository/com/android/support/support-annotations/20.0.0/support-annotations-20.0.0.jar"
-        jumboMode="false"
-        revision="20.0.0"
-        sha1="9d9013e9ff35fc3756411e62873c363c70c638fa"/>
-    <item
         dex="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/pre-dexed/debug/internal_impl-20.0.0-2ec2b29456c64a6b3a0248cd7d0625644b1ccc1b.jar"
         jar="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/libs/internal_impl-20.0.0.jar"
         jumboMode="false"
         revision="20.0.0"
         sha1="e40b3078e3fbd353c9f44da8df25a8fc0078209d"/>
+    <item
+        dex="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/pre-dexed/debug/pull_swipe_library-08630a1de3d9eaa8f387fd3a4838241e8aa83e22.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/libs/pull_swipe_library.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="dd46fc444f639449b5a7d28b6b8270b0d8821d1b"/>
     <item
         dex="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/pre-dexed/debug/pull_swipe_library-eeec36435b213791de927e55fba060c2889333c4.jar"
         jar="/home/daami/AndroidstudioProjects/framework_Final_1/app/libs/pull_swipe_library.jar"
@@ -52,6 +52,30 @@
     <item
         dex="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/pre-dexed/debug/classes-d5fafff47f84b3bde139fd3bd227c4c1e0ae0c71.jar"
         jar="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/classes.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="8694693636ab36910c8100ce527c258ff3ebece0"/>
+    <item
+        dex="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/pre-dexed/debug/pull_swipe_library-ef2067d6cdf8bc398851146dd4760a7e9db94e19.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final/app/libs/pull_swipe_library.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="dd46fc444f639449b5a7d28b6b8270b0d8821d1b"/>
+    <item
+        dex="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/pre-dexed/debug/internal_impl-20.0.0-745be28902a887b27838dbed16c3d4acb8688a4e.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final_1/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/libs/internal_impl-20.0.0.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="e40b3078e3fbd353c9f44da8df25a8fc0078209d"/>
+    <item
+        dex="/home/daami/AndroidstudioProjects/framework_Final/app/build/intermediates/pre-dexed/debug/support-annotations-20.0.0-314138d45b24435903756b7fb67cca3b61e0110c.jar"
+        jar="/home/daami/Desktop/android-studio/sdk/extras/android/m2repository/com/android/support/support-annotations/20.0.0/support-annotations-20.0.0.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="9d9013e9ff35fc3756411e62873c363c70c638fa"/>
+    <item
+        dex="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/pre-dexed/debug/classes-5bc357e257bb754a381e16d4ce3dec003cf324e4.jar"
+        jar="/home/daami/AndroidstudioProjects/framework_Final_1 (test)/app/build/intermediates/exploded-aar/com.android.support/support-v4/20.0.0/classes.jar"
         jumboMode="false"
         revision="20.0.0"
         sha1="8694693636ab36910c8100ce527c258ff3ebece0"/>

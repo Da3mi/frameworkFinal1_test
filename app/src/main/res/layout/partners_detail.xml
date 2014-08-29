@@ -95,14 +95,14 @@
             odoo:label_color="@color/odoo_purple"
             odoo:with_label="true" />
 
-        <odoo.controls.OField
+        <!--<odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             odoo:customLayout="@layout/partners_tags"
             odoo:customLayoutOriantation="vertical"
             odoo:field_name="category_id"
             odoo:label_color="@color/odoo_purple"
-            odoo:with_label="true" />
+            odoo:with_label="true" />-->
 
         <odoo.controls.OField
             android:layout_width="match_parent"
@@ -149,7 +149,21 @@
             <odoo.controls.OField
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                odoo:field_name="patient_id"
+                odoo:label_color="@color/odoo_purple"
+                odoo:with_label="true" />
+
+            <odoo.controls.OField
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 odoo:field_name="appointment_type"
+                odoo:label_color="@color/odoo_purple"
+                odoo:with_label="true" />
+
+            <odoo.controls.OField
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                odoo:field_name="Appointment_date"
                 odoo:label_color="@color/odoo_purple"
                 odoo:with_label="true" />
 

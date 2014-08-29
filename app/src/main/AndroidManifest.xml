@@ -62,6 +62,171 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.odoo.addons.message.MessageComposeActivity"
+            android:label="@string/title_activity_message_compose" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+                <data android:mimeType="vnd.android.cursor.item/vnd.com.odoo.auth.profile" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <!-- Contact service -->
+        <service
+            android:name="com.odoo.base.res.services.ContactSyncService"
+            android:exported="true"
+            android:process=":contacts" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_contacts" />
+            <meta-data
+                android:name="android.provider.CONTACTS_STRUCTURE"
+                android:resource="@xml/contacts" />
+        </service>
+        <!-- Message provider -->
+        <provider
+            android:name="com.odoo.addons.message.providers.message.MessageProvider"
+            android:authorities="com.odoo.addons.message.providers.message"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Messages"
+            android:syncable="true" />
+        <!-- Message provider service -->
+
+        <!-- ResPartner Provider -->
+        <provider
+            android:name="com.odoo.addons.partners.providers.partners.PartnersProvider"
+            android:authorities="com.odoo.addons.partners.providers.partners"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Partners"
+            android:syncable="true" />
+        <service
+            android:name="com.odoo.addons.message.services.MessageSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_messages" />
+        </service>
+
+        <!-- Note provider -->
+        <!--<provider
+            android:name="com.openerp.addons.note.providers.note.NoteProvider"
+            android:authorities="com.openerp.addons.note.providers.note"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Notes"
+            android:syncable="true" />
+        &lt;!&ndash; Note provider service &ndash;&gt;
+        <service
+            android:name="com.openerp.addons.note.services.NoteSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_notes" />
+        </service>-->
+
+        <!-- Mail Group provider -->
+        <provider
+            android:name="com.odoo.addons.message.providers.groups.MailGroupProvider"
+            android:authorities="com.odoo.addons.message.providers.groups"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Groups"
+            android:syncable="true" />
+
+        <!-- Mail Group provider service -->
+        <service
+            android:name="com.odoo.addons.message.services.MailGroupSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_groups" />
+        </service>
+
+       <!-- &lt;!&ndash; Meeting service &ndash;&gt;
+        <service
+            android:name="com.openerp.addons.meeting.services.MeetingSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_meetings" />
+        </service>-->
+
         <!-- Contact service -->
         <service
             android:name="com.odoo.base.res.services.ContactSyncService"
@@ -79,14 +244,62 @@
                 android:resource="@xml/contacts" />
         </service>
 
-        <!-- ResPartner Provider -->
-        <provider
-            android:name="com.odoo.addons.partners.providers.partners.PartnersProvider"
-            android:authorities="com.odoo.addons.partners.providers.partners"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Partners"
-            android:syncable="true" />
+        <!-- Message Widget -->
+        <receiver
+            android:name="com.odoo.addons.message.widgets.MessageWidget"
+            android:label="Odoo Messaging" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_messages" />
+        </receiver>
+        <!-- Message widget remote view service -->
+        <service
+            android:name="com.odoo.addons.message.widgets.MessageRemoteViewService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- Message widget configuration -->
+        <activity
+            android:name="com.odoo.addons.message.widgets.MessageWidgetConfigure"
+            android:icon="@drawable/icon" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Note Widget
+        <receiver
+            android:name="com.openerp.addons.note.widgets.NoteWidget"
+            android:label="OpenERP Notes" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_note" />
+        </receiver>-->
+
+
+        <!-- Note widget remote view service
+        <service
+            android:name="com.odoo.addons.note.widgets.NoteRemoteViewService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />-->
+
+
+        <!-- Note widget configuration
+        <activity
+            android:name="com.openerp.addons.note.widgets.NoteWidgetConfigure"
+            android:icon="@drawable/ic_launcher_o" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+ -->
+
         <!-- ResPartner Service -->
         <service
             android:name="com.odoo.addons.partners.sevices.PartnersService"

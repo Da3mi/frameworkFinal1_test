@@ -18,29 +18,47 @@ import android.util.Log;
 
 import com.odoo.App;
 import com.odoo.support.OUser;
+import com.odoo.util.ODate;
+import com.odoo.util.PreferenceManager;
 
 public class OdooHelper {
 
 	public static final String TAG = OdooHelper.class.getSimpleName();
 
+    OUser mUser = null ;
 	Context mContext = null;
 	Boolean mForceConnect = false;
 	Odoo mOdoo = null;
 	App mApp = null;
     OModel mDatabase = null;
+    List<Integer> mResultIds = new ArrayList<Integer>();
+    List<ODataRow> mRemovedRecordss = new ArrayList<ODataRow>();
+
+    PreferenceManager mPref = null;
+    int mAffectedRows = 0;
 
 	public OdooHelper(Context context) {
 		mContext = context;
 		mApp = (App) context.getApplicationContext();
+        mOdoo = mApp.getOdoo() ;
+        mUser = OUser.current(context);
+        if (mUser != null) {
+            mUser = login(mUser.getUsername(), mUser.getPassword(),
+                    mUser.getDatabase(), mUser.getHost());
+        }
 	}
 
 	public OdooHelper(Context context, Boolean forceConnect) {
 		mContext = context;
 		mForceConnect = forceConnect;
 		mApp = (App) context.getApplicationContext();
+        mUser = OUser.current(context);
+        if (mOdoo == null && mUser != null)
+            mUser = login(mUser.getUsername(), mUser.getPassword(),
+                    mUser.getDatabase(), mUser.getHost());
 	}
 
-    public Object call_kw(String method, OArguments arguments) {
+   public Object call_kw(String method, OArguments arguments) {
         return call_kw(method, arguments, new JSONObject());
     }
 
@@ -78,28 +96,39 @@ public class OdooHelper {
         }
         return null;
     }
+/*
+    public boolean syncWithMethod(String method, OArguments args) {
+        return syncWithMethod(method, args, false);
+    }*/
 
-    public boolean syncWithServer() {
-        return syncWithServer();
+
+
+    public int getAffectedRows() {
+        return mAffectedRows;
     }
-
-
-
-    public boolean syncWithServer(ODomain domain,
+/*
+    public boolean syncWithMethod(String method, OArguments args,
                                   boolean removeLocalIfNotExists) {
-        return syncWithServer(removeLocalIfNotExists,domain,null);
+        Log.d(TAG, "OEHelper->syncWithMethod()");
+        Log.d(TAG, "Model: " + mDatabase.getModelName());
+        Log.d(TAG, "User: " + mUser.getAndroidName());
+        Log.d(TAG, "Method: " + method);
+        boolean synced = false;
+        OFieldsHelper fields = new OFieldsHelper(
+                mDatabase.getColumns());
+        try {
+            JSONObject result = mOdoo.call_kw(mDatabase.getModelName(),
+                    method, args.getArray());
+            if (result.getJSONArray("result").length() > 0)
+                mAffectedRows = result.getJSONArray("result").length();
+            synced = handleResultArray(fields, result.getJSONArray("result"),
+                    false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return synced;
+    }*/
 
-    }
-
-    public boolean syncWithServer(ODomain domain) {
-        return syncWithServer(false, domain,null);
-    }
-
-    public boolean syncWithServer(boolean twoWay, ODomain domain,
-                                  List<Object> ids) {
-        return syncWithServer(twoWay,domain,ids);
-
-    }
 
     public OUser login(String username, String password, String database,
 			String serverURL) {
@@ -123,6 +152,42 @@ public class OdooHelper {
 		}
 		return userObj;
 	}
+
+    private boolean handleResultArray(OFieldsHelper fields, JSONArray results,
+                                      boolean removeLocalIfNotExists) {
+        boolean flag = false;
+        try {
+            fields.addAll(results);
+            // Handling many2many and many2one records
+            List<OFieldsHelper.OERelationData> rel_models = fields.getRelationData();
+            for (OFieldsHelper.OERelationData rel : rel_models) {
+                OdooHelper oe = rel.getDb().getOEInstance();
+                //oe.syncWithServer(false, null, rel.getIds(), false, 0, false);
+            }
+            List<Integer> result_ids = mDatabase.createORReplace(
+                    fields.getValues());
+            mResultIds.addAll(result_ids);
+            mRemovedRecordss.addAll(mDatabase.getRemovedRecords());
+            if (result_ids.size() > 0) {
+                flag = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return flag;
+    }
+
+    public List<ODataRow> getRemovedRecords() {
+        return mRemovedRecordss;
+    }
+
+  /*  public List<Long> getAffectedIds() {
+        List<Long> ids = new ArrayList<Long>();
+        for (Long id : mResultIds) {
+            ids.add(Long.parseLong(id.toString()));
+        }
+        return ids;
+    }*/
 
 	public OUser instance_login(OdooInstance instance, String username,
 			String password) throws OdooAccountExpireException {
@@ -151,7 +216,7 @@ public class OdooHelper {
 		return userObj;
 	}
 
-	private OUser getUserDetail(ODomain domain, String database,
+	public OUser getUserDetail(ODomain domain, String database,
 			String username, String password, String url, int userId,
 			boolean mForceConnect, OdooInstance instance)
 			throws OdooAccountExpireException {
@@ -196,7 +261,23 @@ public class OdooHelper {
 		return userObj;
 	}
 
-	public List<OdooInstance> getUserInstances(OUser user) {
+    public Odoo Odooo() {
+        return mOdoo;
+    }
+
+    public List<Integer> getAffectedIds() {
+        List<Integer> ids = new ArrayList<Integer>();
+        for (Integer id : mResultIds) {
+            ids.add(Integer.parseInt(id.toString()));
+        }
+        return ids;
+    }
+
+    public OUser getUser() {
+        return mUser;
+    }
+
+    public List<OdooInstance> getUserInstances(OUser user) {
 		List<OdooInstance> list = new ArrayList<OdooInstance>();
 		mOdoo = mApp.getOdoo();
 		try {
