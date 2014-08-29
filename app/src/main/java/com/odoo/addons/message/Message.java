@@ -821,7 +821,10 @@ AbsListView.MultiChoiceModeListener mMessageViewMultiChoiceListener = new AbsLis
 
     }
 
-    /*Method for Make Message as Read,Unread and Archive */
+    /**
+     * Method for Make Message as Read,Unread and Archive
+     **/
+
     private boolean toggleReadUnread(OSyncHelper oe, JSONArray ids,
                                      String default_model, int res_id, int parent_id, boolean to_read) {
         boolean flag = false;
